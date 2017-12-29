@@ -4,17 +4,10 @@ class FileReader:
         self.path = path
 
     def read(self):
-        f = None
         try:
-            res = ""
-            f = open(self.path, 'r')
-            for line in f:
-                res += line
-            f.close()
-            return res
+            with open(self.path) as f:
+                return f.read()
         except IOError:
-            if f is not None:
-                f.close()
             return ""
 
 
