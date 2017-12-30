@@ -1,43 +1,32 @@
-import tempfile
 import os
+import uuid
 
 
 class File:
     def __init__(self, path):
         self.path = path
-        try:
-            self._file = open(path, 'r')
-        except FileNotFoundError:
-            self._file = None
+        self.current_position = 0
 
-    def write(self, message):
-        with open(self.path, 'w+') as f:
-            f.write(message)
+        if not os.path.exists(self.path):
+            open(self.path, 'w').close()
 
-    def _append(self, message):
-        with open(self.path, 'a+') as f:
-            f.write(message)
+    def write(self, content):
+        with open(self.path, 'w') as f:
+            return f.write(content)
 
-    def __add__(self, other):
-        d = tempfile.gettempdir()
-        path = os.path.join(d, "res123.txt")
-        if not os.path.exists(path):
-            with open(path, 'w') as f:
-                f.write('')
+    def read(self):
+        with open(self.path, 'r') as f:
+            return f.read()
 
-        temp = File(path)
-        try:
-            with open(self.path, 'r') as f:
-                temp._append(f.read())
-        except FileNotFoundError:
-            temp._append('')
-        try:
-            with open(other.path, 'r') as f:
-                temp._append(f.read())
-        except FileNotFoundError:
-            temp._append('')
+    def __add__(self, obj):
+        new_path = os.path.join(
+            os.path.dirname(self.path),
+            str(uuid.uuid4().hex)
+        )
+        new_file = type(self)(new_path)
+        new_file.write(self.read() + obj.read())
 
-        return temp
+        return new_file
 
     def __str__(self):
         return self.path
@@ -46,12 +35,16 @@ class File:
         return self
 
     def __next__(self):
-        if self._file is None:
-            raise StopIteration
-        res = self._file.readline()
-        if res == '':
-            raise StopIteration
-        return res
+        with open(self.path, 'r') as f:
+            f.seek(self.current_position)
+
+            line = f.readline()
+            if not line:
+                self.current_position = 0
+                raise StopIteration('EOF')
+
+            self.current_position = f.tell()
+            return line
 
 
 if __name__ == "__main__":
