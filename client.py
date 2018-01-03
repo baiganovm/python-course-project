@@ -1,4 +1,5 @@
 import socket
+import time
 
 
 class Client:
@@ -50,3 +51,13 @@ class Client:
 
 class ClientError(Exception):
     """Class to raise exception from client """
+
+
+if __name__ == "__main__":
+    client = Client("127.0.0.1", 10001)
+    client.put("vol", 0.5, int(time.time()))
+    client.put("test", 0.1, int(time.time()))
+    client.put("vol", 0.3, int(time.time()))
+    print(client.get("*"))
+    print(client.get("vol"))
+    print(client.get("abracadabra"))
